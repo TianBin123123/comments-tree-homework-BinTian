@@ -1,0 +1,1 @@
+cd target & java -jar recruitment-java-backend-comments-tree-homework-BinTian-0.0.1-SNAPSHOT.jar
