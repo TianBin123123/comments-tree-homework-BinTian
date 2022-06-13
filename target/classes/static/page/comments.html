@@ -1,0 +1,340 @@
+<style type="text/css">
+body {
+	background-color: #EAEAEA;
+}
+
+#commentsHeader {
+	margin: -10px 0px 0px 0px;
+	height: 60px;
+	background-color: #BCD3AD;
+	position: fixed;
+	width: 100%;
+}
+.placeHeader{
+    margin: 10px;
+}
+
+.normalBtn {
+	margin-left: 30px;
+	cursor: pointer;
+	color: blue;
+	border: none;
+	border-radius:5px;
+	font-size: 16px;
+	height: 36px;
+}
+.downBtn {
+    margin-top: 12px;
+    line-height: 30px;
+}
+
+.headerRight {
+	float: right;
+	margin-right: 60px;
+	padding-top: 5px;
+}
+.toright{
+    float: right;
+    margin-right: 60px;
+}
+
+.hello {
+	padding-top: 10px;
+	margin-right: 10px;
+}
+
+b {
+	font-size: 21px;
+}
+
+.mainCommentsInput {
+	margin: 10px;
+	padding: 20px;
+	background-color: #FFFFFF;
+	 
+}
+.mainComments {
+	margin: 10px 30px;
+	padding: 20px;
+	background-color: #FFFFFF;
+	overflow: auto;
+	max-height: 500px;
+}
+
+.clildComments {
+	margin-left: 30px;
+	padding-right: 30px;
+	min-width: 600px;
+}
+
+.marginSmall {
+	margin: 1px auto;
+}
+
+.unImptFont {
+	font-size: 14px;
+	font-weight: normal;
+	color: grey;
+}
+
+.btn {
+	margin-left: 60px;
+	cursor: pointer;
+	text-decoration: underline;
+	color: blue;
+}
+
+.noBtn {
+	margin-left: 60px;
+	color: grey;
+}
+
+.comments {
+	margin: 3px auto;
+	white-space: normal;
+    word-wrap: break-word;
+}
+
+.marginSmall:hover {
+	background-color: #EEEEEE;
+	
+}
+
+textarea{
+    font-size: 18px;
+}
+</style>
+</head>
+<body>
+	<div id="commentsHeader">
+		<button class="normalBtn downBtn" onclick="addComments('0')">&nbsp;发表新评论&nbsp;</button>
+		<span id="account" class="headerRight" hidden="true" ><span class="hello">欢迎:&nbsp;&nbsp;</span><b id="usernameInfo"></b><br><span id="emailInf"></span></span> 
+		<button id="loginBtn" class="normalBtn downBtn toright" onclick="loginPage()" >&nbsp;登录&nbsp;</button>
+		<div id="tishiMain" class="tishi" ></div>
+	</div>
+	<div class="placeHeader" ><br><br><br></div>
+</body>
+<script src="js/app.js" ></script>
+<script>
+    checkLogin();
+	// 加载数据
+	var globalData;
+	$.get("/comments?t=" + Date.now(), function(data, status) {
+		globalData = data;
+		showTree(data);
+	});
+	
+	function showTree(data) {
+		for (var i = 0; i < data.length; i++) {
+			if (data[i].pId == 0) {
+				$('body').append(getCommentsHtml(data[i]));
+			} else {
+				var divId = '#comments' + data[i].pId;
+				$(divId).append(getCommentsHtml(data[i]));
+			}
+			// 展开所有下级，页面会出现卡顿，调试时使用。
+			//  showSubComments(data[i].id);
+		}
+	}
+	
+	function getCommentsHtml(comments) {
+		var mainClass = comments.pId == 0 ? 'mainComments' : 'clildComments';
+		var id = comments.id;
+		var emptyFlag = comments.subComments.length == 0;
+		if(emptyFlag){
+			var openBtn = '<span class="btn" id="openBtn' + id
+            + '" onclick="showSubComments(' + id + ')" hidden="true">展开</span>';
+		}else{
+			var openBtn = '<span class="btn" id="openBtn' + id
+            + '" onclick="showSubComments(' + id + ')" >展开</span>';
+		}
+		if(emptyFlag){
+			var spBtn = '<span class="noBtn" id="noBtn'+id+'" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>';
+		}else{
+			var spBtn = '<span class="noBtn" id="noBtn'+id+'" hidden="true" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>';
+		}
+		
+		var hideBtn = '<span class="btn" id="hideBtn' + id
+				+ '" onclick="hideSubComments(' + id
+				+ ')" hidden="true" >收起</span>';
+		var cmtBtn = '<span class="btn" id="cmtBtn' + id
+				+ '" onclick="addComments(' + id + ')">评论</span>';
+
+		var item = '	<div class="'+mainClass+'" id="comments'+ id +'">'
+				+ '		<p class="marginSmall"><b>' + comments.username
+				+ '       </b>&nbsp;&nbsp;<span class="unImptFont">'
+				+ comments.time + '			</span>' + spBtn + openBtn + hideBtn + cmtBtn
+				+ '<br>' + '			<span class="comments">' + comments.content
+				+ '		</span></p>' + '		<hr id="hr'+id+'" >'
+				+ '	</div>';
+		return item;
+	}
+
+	function showSubComments(id) {
+		var item = loopFind(globalData, id);
+		if(!item) return;
+		$('#openBtn' + id).hide();
+        $('#hideBtn' + id).show();
+       // $('#hr' + id).show();
+        showTree(item.subComments);
+	}
+	function loopFind(data, id) {
+		for (var i = 0; i < data.length; i++) {
+			if (data[i].id == id) {
+				return data[i];
+			} else {
+				var item = loopFind(data[i].subComments, id);
+				if(item)
+					return item;
+			}
+		}
+	}
+
+	function hideSubComments(id) {
+		$('#openBtn' + id).show();
+		$('#hideBtn' + id).hide();
+		// $('#hr' + id).hide();
+		$('#comments' + id).children('.clildComments').remove();
+	}
+
+	function addComments(id) {
+		var noUser = $('#account').is(':hidden');
+		if(noUser){
+			showErr("Main", "请先登录！");
+            return;
+        };
+		if($('#textarea' + id).length > 0){
+			$('#textarea' + id).focus();
+			return;
+		}
+		if (id == 0) {
+			$('.placeHeader').after(getTextArea(id));
+		} else {
+			// $('#hr' + id).show();
+			$('#hr' + id).after(getTextArea(id));
+		}
+		$('#textarea' + id).focus();
+		autoHeightSet();
+	}
+	
+	function chgChar(id){
+		var len = 200 - $('#textarea' + id).val().length;
+		$('#remain' + id).text('还能输入'+ len +'字');
+	}
+	
+	function pubComments(id) {
+		var noUser = $('#account').is(':hidden');
+		if(noUser){
+			showErr(id, "请先登录！");
+			return;
+		};
+		var pId = id; // 对id评论,id保存在pId字段
+		var username = $('#account').children('b').text();
+		var content = $('#textarea' + id).val();
+		if(content.length < 3){
+			showErr(id, "评论内容不能少于3个字");
+			return ;
+		}
+		// 虽然限制了maxLength，还是校验一下
+		if(content.length > 200){
+			showErr(id, "评论内容不能超过200个字");
+			return ;
+		}
+		var param = {
+			pId: pId, 
+			username: username, 
+			content: content
+		};
+        $.post("/comments", param, pubCommentsCallBack)
+            .error(function (data) {
+            	showErr(id, data.responseText);
+            	if(data.status == 401){
+            		// 如果后台提示未登录，说明登录已失效，显示登录按钮
+            		$('#account').hide();
+                    $('#loginBtn').show();
+            	}
+            });
+	}
+	
+	function showErr(id, msg){
+		$("#tishi" + id).show().html("<div class='prompt'><i class='tishi_icon'></i>"+msg+"</div>").fadeOut(5000);
+	}
+	
+	function pubCommentsCallBack(data, status) {
+        data.subComments=[];
+        // 1. 移除评论框
+        var pId = data.pId;
+        $('#textarea' + pId).parent().remove();
+        // 2. 拼接评论
+        if(pId == 0){
+        	// 拼在第一位
+        	$('.placeHeader').after(getCommentsHtml(data));
+        	fadeIn(data.id);
+        	var arr = [];
+        	arr.push(data);
+        	for(var i = 0; i < globalData.length; i++){
+        		arr.push(globalData[i]);
+        	}
+        	globalData = arr;
+        	return;
+        }
+        // 判断是否已展开下级 
+        var item = loopFind(globalData, pId);
+        if($('#comments' + pId).children('.clildComments').length == 0){
+        	$('#openBtn' + pId).hide();
+            $('#hideBtn' + pId).show();
+            showTree(item.subComments);
+        }
+        // 拼在父评论的内部
+        $('#hr' + pId).after(getCommentsHtml(data));
+        fadeIn(data.id); // 淡入效果，能感觉到评论的发布
+        // 如果这是第一条子评论，把父节点的收起按钮显示出来
+        if(item.subComments.length == 0){
+        	$('#hideBtn' + pId).show();
+            $('#noBtn' + pId).hide();
+        }
+        // 放到 数组中
+        var arr = [];
+        arr.push(data);
+        for(var i = 0; i < item.subComments.length; i++){
+            arr.push(item.subComments[i]);
+        }
+        item.subComments = arr;
+     }
+	// 淡入效果
+	function fadeIn(id){
+		var ele = $('#comments' + id);
+		ele.hide();
+		ele.fadeIn(3000);
+	}
+	
+	function getTextArea(id){
+	    var html = '<div class="mainCommentsInput"><div id="tishi'+id+'" class="tishi"></div>'+
+				'        <textarea id="textarea'+id+'" autoHeight="true" maxlength="200" cols="100" rows="2" onkeydown="chgChar(\''+id+'\')" onkeyup="chgChar(\''+id+'\')" ></textarea>'+
+				'        <br><span id="remain'+id+'">还能输入200字</span>'+
+				'        <button class="normalBtn" onclick="pubComments(\''+id+'\')" >&nbsp;发布&nbsp;</button>'+
+				'        </div>';
+		return html;
+	}
+	function autoHeightSet(){
+		$.fn.autoHeight = function() {
+            function autoHeight(elem) {
+                elem.style.height = 'auto';
+                elem.scrollTop = 0; //防抖动
+                elem.style.height = elem.scrollHeight + 'px';
+            }
+            this.each(function() {
+                autoHeight(this);
+                $(this).on('keyup', function() {
+                    autoHeight(this);
+                });
+            });
+        }
+        $('textarea[autoHeight]').autoHeight();
+	}
+
+	$(function() {
+		autoHeightSet();
+	});
+	
+</script>

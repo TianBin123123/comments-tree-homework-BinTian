@@ -1,0 +1,19 @@
+server:
+  port: 18080
+spring:
+  application-name: comments
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:sqlite.db
+    username:
+    password:
+    schema: classpath:db/sql/schema.sql
+    data: classpath:db/sql/data.sql
+    initialization-mode: always
+    continue-on-error: true
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true #开启下划线转驼峰
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    mapper-locations: 
+    

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Title: comments-tree-homework-BinTian
+Implementation-Version: 0.0.1-SNAPSHOT
+Built-By: bint
+Implementation-Vendor-Id: com.example
+Build-Jdk: 1.8.0_144
+Implementation-URL: https://spring.io/projects/spring-boot/comments-tr
+ ee-homework-BinTian
+Created-By: Maven Integration for Eclipse
+

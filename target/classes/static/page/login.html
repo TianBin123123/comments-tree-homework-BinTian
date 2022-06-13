@@ -1,0 +1,78 @@
+<div id="large-header" class="large-header login-page">
+	<canvas id="demo-canvas" width="1590" height="711"></canvas>
+	<div class="login-form">
+		<div class="login-content">
+			<h1 class="title_name">账户登录</h1>
+			<form method="post" role="form" id="form_login" class="login_padding">
+				<div class="form-group clearfix">
+					<div class="input-group">
+						<div class="input-group-addon">
+							<i class="icon_user"></i>
+						</div>
+						<input type="text" class="form-control" name="username"
+							value="" id="username" placeholder="账号/邮箱"
+							autocomplete="off">
+					</div>
+				</div>
+				<div class="form-group clearfix">
+					<div class="input-group">
+						<div class="input-group-addon">
+							<i class="icon_password"></i>
+						</div>
+						<input type="password" class="form-control" name="password"
+							value="" id="password" placeholder="密码" autocomplete="off">
+					</div>
+				</div>
+				<div class="center">
+					<input type="checkbox" name="rememberMe" id="rememberMe" value="1" />
+					<a class="forget" onclick="fRememberMe()">30天内免登录</a>
+				</div>
+				<div class="tishi"></div>
+				<div class="form-group">
+					<a href="javascript:;" type="submit"
+						class="btn btn-danger btn-block btn-login" onClick="cliLogin()">
+						<i class="fa fa-sign-in"></i> 登录
+					</a>
+				</div>
+				<div class=" textright">
+					<a class="forget" onclick="registerPage()" >立即注册</a>
+				</div>
+				<div class="form-group"></div>
+			</form>
+		</div>
+	</div>
+</div>
+<script src="js/TweenLite/TweenLite.min.js"></script>
+<script src="js/TweenLite/EasePack.min.js"></script>
+<script src="js/TweenLite/rAF.js"></script>
+<script src="js/TweenLite/demo-1.js"></script>
+<script src="js/TweenLite/demo-1.js"></script>
+<script src="js/app.js" ></script>
+<script>
+function cliLogin(){
+    var username = $.trim($("#username").val());
+    var password = $("#password").val();
+    if ($.trim(username) == "") {
+        Tip('请输入用户名或邮箱');
+        $("#username").focus();
+        return;
+    }
+    if ($.trim(password) == "") {
+        Tip('请输入密码');
+        $("#password").focus();
+        return;
+    }
+    
+    var param = {
+        username: username, 
+        password: password, 
+        rememberMe: $("#rememberMe").prop("checked")
+    };
+    sendLoginPost(param);
+}
+
+function fRememberMe(){
+  // 切换选中/未选中
+  $("#rememberMe").prop("checked", !$("#rememberMe").prop("checked"));
+}
+</script>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.comments.tree.mapper.ICommentsMapper">
+    
+    <resultMap type="com.comments.tree.entity.Comments" id="commentsMap">
+        <id column="ID" property="id"/>
+        <association property="subComments" javaType="list" column="id" select="getCommentsTree" />
+    </resultMap>
+    
+	<select id="getCommentsTree" resultMap="commentsMap" >
+		SELECT ID,
+		       P_ID,
+		       CONTENT,
+		       USERNAME,
+		       TIME
+        FROM COMMENTS
+        where 
+        <choose>
+            <when test="id > 0">
+                P_ID = #{pId}
+            </when>
+            <otherwise>
+                P_ID is null
+            </otherwise>
+        </choose>
+        order by TIME desc
+	</select>
+	
+    <insert id="addComments" parameterType="com.comments.tree.entity.Comments" useGeneratedKeys="true" keyProperty="id" >
+        INSERT INTO COMMENTS 
+            (<if test="pId > 0">P_ID, </if> CONTENT, USERNAME, TIME) 
+        VALUES 
+            (<if test="pId > 0">#{pId}, </if> #{content}, #{username}, #{time})
+    </insert>
+	
+
+</mapper>
